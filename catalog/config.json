@@ -1,0 +1,208 @@
+{
+  "system_name": "Smart Tower Garden",
+  "version": "2.0.0",
+  "catalog": {
+    "name": "Tower Catalog Service",
+    "version": "1.0",
+    "host": "127.0.0.1",
+    "port": 8080
+  },
+  "mqtt": {
+    "host": "localhost",
+    "port": 1883,
+    "topics": {
+      "sensors_base": "garden/sensors/data",
+      "cmd_base": "garden/cmd",
+      "alerts_raw": "garden/alerts/raw",
+      "alerts_user": "garden/alerts/user",
+      "actuators_status": "garden/actuators/status"
+    }
+  },
+  "thingsboard": {
+    "enabled": true,
+    "host": "eu.thingsboard.cloud",
+    "tokens": {
+      "tower_1": "a9Mz786Kyyg8bkpsoQ5y",
+      "tower_2": "8RIosq44dtyoDKnVaZGe",
+      "tower_3": "ZeSgAMyN2Yby1nBoHMVO",
+      "tower_4": "deKvycXugSMnnCy6R1br",
+      "tower_5": "7UoJMX4SafQfAbimykH9"
+    }
+  },
+  "devices": {
+    "sensors": [
+      "ph",
+      "ec",
+      "level_r1",
+      "level_r2",
+      "air_temperature",
+      "light_intensity"
+    ],
+    "actuators": [
+      "pump_refill",
+      "nutrient_pump",
+      "pump_ph_up",
+      "pump_ph_down",
+      "grow_light",
+      "cooling_fan",
+      "alarm"
+    ]
+  },
+  "thresholds": {
+    "ph": {
+      "min": 5.5,
+      "max": 6.5
+    },
+    "ec": {
+      "min": 1.0,
+      "max": 2.5
+    },
+    "air_temperature": {
+      "min": 18,
+      "max": 28
+    },
+    "air_hum": {
+      "min": 40,
+      "max": 80
+    },
+    "water_temperature": {
+      "min": 18,
+      "max": 24
+    },
+    "water_level": {
+      "min": 20,
+      "max": 95
+    },
+    "light_intensity": {
+      "min": 200,
+      "max": 5000
+    }
+  },
+  "plants": {
+    "leafy_greens": {
+      "lettuce": {
+        "optimal_ph": [5.6, 6.0],
+        "optimal_ec": [1.1, 1.2],
+        "max_air_temp": 28,
+        "min_water_level_cm": [5, 10]
+      },
+      "spinach": {
+        "optimal_ph": [6.0, 7.0],
+        "optimal_ec": [1.8, 2.3],
+        "max_air_temp": 24,
+        "min_water_level_cm": [4, 5]
+      },
+      "kale": {
+        "optimal_ph": [6.0, 7.0],
+        "optimal_ec": [1.6, 2.5],
+        "max_air_temp": 27,
+        "min_water_level_cm": [8, 10]
+      },
+      "swiss_chard": {
+        "optimal_ph": [6.0, 6.5],
+        "optimal_ec": [1.8, 2.3],
+        "max_air_temp": 26,
+        "min_water_level_cm": [6, 8]
+      },
+      "arugula": {
+        "optimal_ph": [6.0, 6.5],
+        "optimal_ec": [1.0, 1.4],
+        "max_air_temp": 25,
+        "min_water_level_cm": [5]
+      },
+      "collard_greens": {
+        "optimal_ph": [6.5, 7.0],
+        "optimal_ec": [1.8, 2.5],
+        "max_air_temp": 28,
+        "min_water_level_cm": [8]
+      },
+      "mustard_greens": {
+        "optimal_ph": [6.0, 6.5],
+        "optimal_ec": [1.2, 2.4],
+        "max_air_temp": 27,
+        "min_water_level_cm": [6]
+      },
+      "microgreens": {
+        "optimal_ph": [6.0, 6.0],
+        "optimal_ec": [0.5, 1.0],
+        "max_air_temp": 24,
+        "min_water_level_cm": [1, 2]
+      },
+      "bok_choy": {
+        "optimal_ph": [6.0, 6.5],
+        "optimal_ec": [1.5, 2.0],
+        "max_air_temp": 26,
+        "min_water_level_cm": [6, 8]
+      },
+      "mizuna": {
+        "optimal_ph": [6.0, 6.8],
+        "optimal_ec": [1.6, 2.0],
+        "max_air_temp": 25,
+        "min_water_level_cm": [5]
+      },
+      "watercress": {
+        "optimal_ph": [6.5, 7.2],
+        "optimal_ec": [1.5, 2.0],
+        "max_air_temp": 23,
+        "min_water_level_cm": [10],
+        "notes": "flowing water preferred"
+      },
+      "butterhead_lettuce": {
+        "optimal_ph": [5.8, 5.8],
+        "optimal_ec": [1.2, 1.2],
+        "max_air_temp": 24,
+        "min_water_level_cm": [5, 10]
+      }
+    }
+  },
+  "active_plant": {
+    "category": "leafy_greens",
+    "name": "spinach"
+  },
+  "actors": {
+    "catalog": {
+      "role": "catalog",
+      "endpoint": "http://127.0.0.1:8080"
+    },
+    "sensor_connector": {
+      "role": "sensor",
+      "endpoint": null
+    },
+    "actuator_connector": {
+      "role": "actuator",
+      "endpoint": null
+    },
+    "pump_refill": {
+      "gpio": 12,
+      "type": "relay"
+    },
+    "pump_ph_up": {
+      "gpio": 13,
+      "type": "peristaltic"
+    },
+    "pump_ph_down": {
+      "gpio": 14,
+      "type": "peristaltic"
+    },
+    "nutrient_pump": {
+      "gpio": 15,
+      "type": "peristaltic"
+    },
+    "cooling_fan": {
+      "gpio": 27,
+      "type": "relay"
+    },
+    "grow_light": {
+      "gpio": 26,
+      "type": "relay"
+    },
+    "circulation_pump": {
+      "gpio": 25,
+      "type": "relay"
+    },
+    "alarm": {
+      "gpio": 24,
+      "type": "relay"
+    }
+  }
+}
