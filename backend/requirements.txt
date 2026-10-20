@@ -1,0 +1,7 @@
+fastapi==0.115.12
+httpx==0.28.1
+paho-mqtt==2.1.0
+psycopg[binary]==3.2.9
+pytest==8.4.1
+SQLAlchemy==2.0.41
+uvicorn==0.34.3

@@ -1,0 +1,103 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hydroponics}
+      POSTGRES_USER: ${POSTGRES_USER:-hydroponics}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hydroponics_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-hydroponics} -d ${POSTGRES_DB:-hydroponics}
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0.21
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-hydroponics}:${POSTGRES_PASSWORD:-hydroponics_dev}@postgres:5432/${POSTGRES_DB:-hydroponics}
+      MQTT_ENABLED: "true"
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      RECOMMENDATION_MAX_TELEMETRY_AGE_SECONDS: "${RECOMMENDATION_MAX_TELEMETRY_AGE_SECONDS:-120}"
+      RECOMMENDATION_MAX_FUTURE_CLOCK_SKEW_SECONDS: "${RECOMMENDATION_MAX_FUTURE_CLOCK_SKEW_SECONDS:-5}"
+      ACTUATOR_VERIFICATION_TIMEOUT_SECONDS: "${ACTUATOR_VERIFICATION_TIMEOUT_SECONDS:-5}"
+      ALERT_RECOVERY_CONFIRMATION_READINGS: "${ALERT_RECOVERY_CONFIRMATION_READINGS:-3}"
+      ALERT_REOPEN_CONFIRMATION_READINGS: "${ALERT_REOPEN_CONFIRMATION_READINGS:-3}"
+      OLLAMA_BASE_URL: "${OLLAMA_BASE_URL:-http://host.docker.internal:11434}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3.5:9b}"
+      OLLAMA_TIMEOUT_SECONDS: "${OLLAMA_TIMEOUT_SECONDS:-120}"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+
+  simulator:
+    build:
+      context: ./simulator
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      SIMULATED_TOWER_COUNT: "${SIMULATED_TOWER_COUNT:-3}"
+      SIM_TELEMETRY_INTERVAL_SECONDS: "${SIM_TELEMETRY_INTERVAL_SECONDS:-5}"
+      SIM_RANDOM_SEED: "${SIM_RANDOM_SEED:-42}"
+      SIM_MISSING_SENSORS: "${SIM_MISSING_SENSORS:-}"
+      SIM_DEVIATION_TOWER: "${SIM_DEVIATION_TOWER:-}"
+      SIM_DEVIATION_FACTOR: "${SIM_DEVIATION_FACTOR:-}"
+      SIM_DEVIATION_OFFSET: "${SIM_DEVIATION_OFFSET:-}"
+      SIM_RUN_ONCE: "false"
+      SIM_STATE_PATH: "/simulator-state/state.json"
+      SIM_DISCOVER_TOWERS_FROM_BACKEND: "true"
+      SIM_TOWER_REFRESH_SECONDS: "${SIM_TOWER_REFRESH_SECONDS:-2}"
+      BACKEND_BASE_URL: http://backend:8000
+    volumes:
+      - simulator_state:/simulator-state
+    depends_on:
+      mosquitto:
+        condition: service_started
+      backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "from pathlib import Path; raise SystemExit(0 if Path('/tmp/simulator-ready').exists() else 1)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  streamlit:
+    build:
+      context: ./streamlit
+    environment:
+      BACKEND_BASE_URL: http://backend:8000
+      TELEMETRY_MAX_AGE_SECONDS: "${RECOMMENDATION_MAX_TELEMETRY_AGE_SECONDS:-120}"
+      RECOMMENDATION_MAX_FUTURE_CLOCK_SKEW_SECONDS: "${RECOMMENDATION_MAX_FUTURE_CLOCK_SKEW_SECONDS:-5}"
+    ports:
+      - "8501:8501"
+    depends_on:
+      backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
+  simulator_state:
