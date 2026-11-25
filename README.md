@@ -375,6 +375,14 @@ The project was validated locally with Docker Compose using a complete supervise
 
 **simulated telemetry → plant-specific target check → alert/recommendation → AI explanation → explicit user approval → backend revalidation → MQTT command → simulated device acknowledgement → later telemetry-confirmed recovery → action history**
 
+## Authors
+
+This project was collaboratively developed by two Master's students at Politecnico di Torino.
+
+- [Rouyan Mohtashami](https://github.com/r-mohtashami)
+- [Amirhossein Ghaderi](https://github.com/amirho98)
+
+
 A final clean rebuild from the project folder completed successfully, the services restarted from the rebuilt images, and the backend regression suite again returned **125 passed**.
 
 This keeps the final project claim narrow and defensible: it is a reproducible, simulated home-hydroponic monitoring and supervised-control platform with a bounded AI operational interface.
